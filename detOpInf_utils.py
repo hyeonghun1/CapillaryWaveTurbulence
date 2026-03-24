@@ -193,6 +193,166 @@ class OpInfROM:
         
         return min_error_quad, [min_index_2d[1], min_index_2d[0]]
 
+import os, h5py
+
+def load_Q_dataset(power, labels, base_path="/disk/hyk049/DHM_new_1Dcenter"):
+    """
+    Load Q datasets for given power and labels.
+
+    Parameters
+    ----------
+    power : str
+        Example: '0p10'
+    labels : list of str
+        Example: ['a','b','c',...]
+    base_path : str
+        Root directory
+
+    Returns
+    -------
+    t : ndarray
+    x : ndarray
+    Q : dict
+        Dictionary of Q matrices keyed by label
+    nx : int
+    """
+    
+    base = os.path.join(base_path, power)
+
+    def h5read(fname, dset):
+        with h5py.File(fname, "r") as f:
+            return np.array(f[dset])
+
+    # Use first label to load t, x
+    first_file = os.path.join(base, f"Q_1D_{power}vpp_{labels[0]}.h5")
+    t = h5read(first_file, "/t")
+    x = h5read(first_file, "/x")
+    nx = len(x)
+
+    # Load all Q
+    Q = {}
+    for lbl in labels:
+        fname = os.path.join(base, f"Q_1D_{power}vpp_{lbl}.h5")
+        Q[lbl] = h5read(fname, "/Q_1D")
+
+    return Q, t, x, nx
+
+def preprocess_Q(Q_dict, t, labels, split_size=5760):
+    """
+    Preprocess Q data:
+    - split into segments
+    - concatenate across realizations
+    - compute mean field
+
+    Parameters
+    ----------
+    Q_dict : dict
+        {label: Q matrix (nx, nt)}
+    t : ndarray
+        time vector
+    labels : list
+        list of labels to include
+    split_size : int
+
+    Returns
+    -------
+    Q_split : dict
+        {label: (nx, num_segs, split_size)}
+    Qstate_all : ndarray
+        (nx, total_segs, split_size)
+    X_mean : ndarray
+        (nx, split_size)
+    tt : ndarray
+        truncated time vector
+    """
+
+    nt = len(t)
+    num_segs = nt // split_size
+    tt = t[:split_size]
+
+    def split_Q(Qi):
+        Qi = Qi[:, :num_segs * split_size]
+        nx = Qi.shape[0]
+        return Qi.reshape(nx, num_segs, split_size)
+
+    # Split all
+    Q_split = {lbl: split_Q(Q_dict[lbl]) for lbl in labels}
+
+    # Concatenate across labels (segments axis = 1)
+    Qstate_all = np.concatenate(
+        [Q_split[lbl] for lbl in labels],
+        axis=1
+    )
+
+    # Mean over segments
+    X_mean = np.mean(Qstate_all, axis=1)
+
+    return Q_split, Qstate_all, X_mean, tt
+
+def scale_snapshots(Q_train, t_train, mean_subtract=False, scale=False, verbose=True):
+    """
+    Preprocess snapshot data with optional mean subtraction and scaling.
+
+    Parameters
+    ----------
+    Q_train : ndarray (nx, nt)
+        Snapshot matrix.
+    t_train : ndarray (nt,)
+        Time vector.
+    mean_subtract : bool
+        Whether to subtract temporal mean.
+    scale : bool
+        Whether to scale by max absolute value.
+    verbose : bool
+        Print summary info.
+
+    Returns
+    -------
+    Q_proc : ndarray
+        Processed snapshots.
+    dt : float
+        Time step.
+    stats : dict
+        Dictionary with preprocessing info (mean, scale factor).
+    """
+    
+    Q_proc = Q_train.copy()
+    stats = {
+        "mean": None,
+        "scale": None
+    }
+
+    if mean_subtract:
+        Q_mean = np.mean(Q_proc, axis=1, keepdims=True)
+        Q_proc = Q_proc - Q_mean
+        stats["mean"] = Q_mean
+
+        if verbose:
+            print("Mean subtraction performed on snapshots.")
+
+        if scale:
+            scl = np.max(np.abs(Q_proc))
+            Q_proc = Q_proc / scl
+            stats["scale"] = scl
+
+            if verbose:
+                print("Scaling performed on snapshots.")
+        else:
+            if verbose:
+                print("No scaling performed after mean subtraction.")
+    else:
+        if verbose:
+            print("Using original snapshots without mean subtraction.")
+
+    dt = t_train[1] - t_train[0]
+
+    if verbose:
+        print(f"\nProcessed snapshot matrix shape: {Q_proc.shape}")
+        print(f"Time vector shape: {t_train.shape}")
+        print(f"dt = {dt:.4e}")
+
+    return Q_proc, dt, stats
+
 from sympy import symbols, factorial, Matrix, Rational
 
 def finite_diff_coeffs(x_vals, x0, derivative_order):
