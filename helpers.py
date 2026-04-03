@@ -450,8 +450,8 @@ def compute_model(f, V, xr0_test, s, batch_size, L_test):
     # Initialize outputs
     E_test = np.zeros((r, s))
     C_test = np.zeros((r, r, s))
-    f1 = 0.0
-    f2 = 0.0
+    # f1 = 0.0
+    # f2 = 0.0
 
     # Loop over batches
     for batch in range(num_batches):
@@ -461,7 +461,7 @@ def compute_model(f, V, xr0_test, s, batch_size, L_test):
 
         # Compute statistics for one batch
         # estimate() should return (E_temp, C_temp, f1_temp, f2_temp)
-        E_temp, C_temp, f1_temp, f2_temp = estimate(f, V, xr0_test, s, Nb)
+        E_temp, C_temp, Xr = estimate(f, V, xr0_test, s, Nb)
 
         # Accumulate batch mean
         E_test += (Nb / L_test) * E_temp
@@ -474,7 +474,7 @@ def compute_model(f, V, xr0_test, s, batch_size, L_test):
     for k in range(s):
         C_test[:, :, k] -= np.outer(E_test[:, k], E_test[:, k])
 
-    return E_test, C_test, f1, f2
+    return E_test, C_test, Xr
 
 
 def estimate(f, Vr, xr0, s, L):
@@ -524,9 +524,9 @@ def estimate(f, Vr, xr0, s, L):
 
     # f2: mean over elements of X(T)^3 / exp(X(T))
     # f2 = np.mean(X_T_recon**3 / np.exp(X_T_recon))
-    f1, f2 = 0, 0
+    # f1, f2 = 0, 0
 
-    return E_emp, C_emp, f1, f2
+    return E_emp, C_emp, Xr
 
 
 def stepSDE(f, x0, s, L):
@@ -674,7 +674,8 @@ def infer_drift_u(E_train, u_train, h, isbilinear, regs=None):
     else:
         D = np.vstack([
             Er[:, :K],
-            u[:, :K]
+            u[:K],
+            # u[:, :K]
         ])
         rhs = Er_dot[:, :K]
         
@@ -709,12 +710,13 @@ def infer_drift_u(E_train, u_train, h, isbilinear, regs=None):
     return Ehat, Ahat, Bhat, Nhat
 
 
+import scipy.linalg as la
 def infer_diffusion_u(C_train, u_train, h, Ahat, Nhat, lam):
     """
     Infer diffusion operator from covariance dynamics.
     """
 
-    # Cr, Cr_dot, ind = central_finite_differences(C_train, h, ord=2, axis=2)
+    # Cr1, Cr_dot1, ind = central_finite_differences(C_train, h, ord=2, axis=2)
     # T = len(ind)
     
     # Central finite differences along the 3rd axis (time)
@@ -722,6 +724,8 @@ def infer_diffusion_u(C_train, u_train, h, Ahat, Nhat, lam):
     Cr = C_train
     ind = Cr.shape[2]
     T = ind
+    
+    # print((la.norm(Cr_dot[:,:,1:-2])-la.norm(Cr_dot1))/la.norm(Cr_dot1))
 
     n = Ahat.shape[0]
     Hhat = np.zeros((n, n))
@@ -818,8 +822,8 @@ def compute_model_u(f, V, xr0_test, u_test, batch_size, L_test):
     for batch in range(num_batches):
         # Last batch might be smaller
         Nb = batch_size
-        if batch == num_batches - 1:
-            Nb = L_test - (batch) * batch_size
+        if batch == num_batches - 1:    # last batch
+            Nb = L_test - (batch) * batch_size  
 
         # Compute statistics for one batch
         E_temp, C_temp = estimate_u(f, xr0_test, u_test, Nb)
@@ -888,12 +892,13 @@ def stepSDE_u(f, x0, u, L):
     Xr = np.zeros((r, L, s))
 
     # First time step
-    Xr[:, :, 0] = f(x0, u[:, 0] if u.ndim > 1 else u[0], L)
+    Xr[:, :, 0] = f(x0, u[:, 0] if u.ndim > 1 else u[0], L, 0)
 
     # Time stepping
     for ii in range(1, s):
         u_prev = u[:, ii-1] if u.ndim > 1 else u[ii-1]
-        Xr[:, :, ii] = f(Xr[:, :, ii-1], u_prev, L)
+        Xr[:, :, ii] = f(Xr[:, :, ii-1], u_prev, L, ii-1)
+        # Xr[:, :, ii] = f(Xr[:, :, ii-1], u_prev, L)
 
     return Xr
 
