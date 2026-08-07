@@ -17,3 +17,13 @@ The code is based on and extends the methodology introduced in:
   year={2025},
   publisher={SIAM}
 }</pre></details>
+
+The data used in the code is publicly available through:
+
+[2] L. Zhang, H. Kim, B. Kramer, J. Friend. [Water Surface Data. In Experimental Datasets of Capillary Wave Turbulence in a Micro-Scale System](https://doi.org/10.6075/J0K07581)<details><summary>BibTex</summary><pre>
+@misc{capillary_wave_datasets,
+  author    = {Zhang, Lei and Kim, Hyeonghun and Kramer, Boris and Friend, James},
+  title     = {Water Surface Data. {I}n Experimental Datasets of Capillary Wave Turbulence in a Micro-Scale System},
+  year      = {2026},
+  note      = {UC San Diego Library Digital Collections. https://doi.org/10.6075/J0K07581}
+}</pre></details>
