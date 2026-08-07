@@ -19,6 +19,16 @@ UC San Diego Library Digital Collections.
 ### BibTeX
 
 ```bibtex
+@article{freitag2025learning,
+  title={Learning stochastic reduced models from data: A nonintrusive approach},
+  author={Freitag, MA and Nicolaus, JM and Redmann, M},
+  journal={SIAM Journal on Scientific Computing},
+  volume={47},
+  number={5},
+  pages={A2851--A2880},
+  year={2025},
+  publisher={SIAM}
+}
 @misc{capillary_wave_datasets,
   author = {Zhang, Lei and Kim, Hyeonghun and Kramer, Boris and Friend, James},
   title = {Water Surface Data. {I}n Experimental Datasets of Capillary Wave Turbulence in a Micro-Scale System},
