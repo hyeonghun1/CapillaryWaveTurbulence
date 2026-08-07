@@ -37,3 +37,5 @@ UC San Diego Library Digital Collections.
   note = {UC San Diego Library Digital Collections},
   doi = {10.6075/J0K07581}
 }</pre></details>
+
+The Python codes are implemented in Python 3.10.
