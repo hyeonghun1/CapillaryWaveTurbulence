@@ -6,7 +6,7 @@ Operator Inference using experimental measurements."
 The code is based on and extends the methodology introduced in:
 
 [1] M. A. Freitag, J. M. Nicolaus, M. Redmann
- 	[Learning Stochastic Reduced Models from Data: A Nonintrusive Approach](https://epubs.siam.org/doi/full/10.1137/24M1679756)<details><summary>BibTex</summary><pre>
+ 	[Learning Stochastic Reduced Models from Data: A Nonintrusive Approach.](https://epubs.siam.org/doi/full/10.1137/24M1679756)<details><summary>BibTex</summary><pre>
 @article{freitag2025learning,
   title={Learning stochastic reduced models from data: A nonintrusive approach},
   author={Freitag, MA and Nicolaus, JM and Redmann, M},
@@ -20,7 +20,7 @@ The code is based on and extends the methodology introduced in:
 
 The data used in the code is publicly available through:
 
-[2] L. Zhang, H. Kim, B. Kramer, J. Friend. [Water Surface Data. In Experimental Datasets of Capillary Wave Turbulence in a Micro-Scale System](https://doi.org/10.6075/J0K07581)<details><summary>BibTex</summary><pre>
+[2] L. Zhang, H. Kim, B. Kramer, J. Friend. [Water Surface Data. In Experimental Datasets of Capillary Wave Turbulence in a Micro-Scale System.](https://doi.org/10.6075/J0K07581)<details><summary>BibTex</summary><pre>
 @misc{capillary_wave_datasets,
   author    = {Zhang, Lei and Kim, Hyeonghun and Kramer, Boris and Friend, James},
   title     = {Water Surface Data. {I}n Experimental Datasets of Capillary Wave Turbulence in a Micro-Scale System},
