@@ -2,7 +2,7 @@
 
 This repository contains the codebase for the work:
 
-> **Stochastic reduced-order modeling of capillary wave turbulence via Operator Inference using experimental measurements.**
+> **Stochastic Operator Inference for reduced-order modeling of capillary wave turbulence using experimental measurements.**
 
 The code is based on and extends the methodology introduced in:
 
